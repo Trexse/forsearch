@@ -7,6 +7,7 @@ from itsdangerous import Serializer
 from . import admin
 from .. import db
 from ..modles import Notice, Photo
+from ..redis_ import r
 
 
 def admin_login_token(view_func):
@@ -29,7 +30,7 @@ def admin_login_token(view_func):
     return wrapper
 
 
-@admin.route("/tag", methods=["DELETE"])
+@admin.route("/delete", methods=["DELETE"])
 @admin_login_token
 def delete_notice():
     admin_id = g.admin_id
@@ -48,3 +49,13 @@ def delete_notice():
         print(e)
         db.session.rollback()
         return jsonify(code=4004, msg="删除失败")
+
+
+@admin.route("/R_O_F", methods=["GET"])
+@admin_login_token
+def see_rof():
+    print("notice使用次数:"+r.get("notice")/"使用人数:"+r.scard("notice"))
+    print("upload使用次数:" + r.get("upload") / "使用人数:" + r.scard("upload"))
+    print("get_notice使用次数:" + r.get("get_notice") / "使用人数:" + r.scard("get_notice"))
+    print("get_notice_all使用次数:" + r.get("get_notice_all") / "使用人数:" + r.scard("get_notice_all"))
+    print("delete_notice使用次数:" + r.get("delete_notice") / "使用人数:" + r.scard("delete_notice"))

@@ -12,7 +12,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from . import user
 from .. import db
 from ..modles import User, Notice, Photo
-from ..redis_ import r
+from ..redis_ import r, stop_push_again
 
 
 def user_login_token(view_func):
@@ -83,6 +83,7 @@ def login():
 
 @user.route("/notice", methods=['POST'])
 @user_login_token
+@stop_push_again
 def notice():
     user_id = g.user_id
     r.sadd("notice", user_id)
@@ -112,6 +113,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 @user.route("/upload", methods=["POST"])
 @user_login_token
+@stop_push_again
 def upload():
     user_id = g.user_id
     r.sadd("upload", user_id)
@@ -148,6 +150,7 @@ def upload():
 
 @user.route("/get_notice", methods=['POST'])
 @user_login_token
+@stop_push_again
 def get_notice():
     user_id = g.user_id
     r.sadd("get_notice", user_id)
@@ -173,6 +176,7 @@ def get_notice():
 
 @user.route("/get_notice_all", methods=['GET'])
 @user_login_token
+@stop_push_again
 def get_notice_all():
     user_id = g.user_id
     r.sadd("get_notice_all", user_id)
@@ -190,6 +194,7 @@ def get_notice_all():
 
 @user.route("/delete_notice", methods=['POST'])
 @user_login_token
+@stop_push_again
 def delete_notice():
     user_id = g.user_id
     r.sadd("delete_notice", user_id)
