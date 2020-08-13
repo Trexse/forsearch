@@ -24,7 +24,6 @@ def create_app(config_name):
     global redis_store
     redis_store = redis.StrictRedis(host=config_class.REDIS_HOST, port=config_class.REDIS_PORT,
                                     password=config_class.REDIS_PASSWORD, db=2, decode_responses=True)
-
     # 注册蓝图
     from Notice import admin, user
     app.register_blueprint(user.user, url_prefix="/user")

@@ -2,15 +2,17 @@ import functools
 import os
 import random
 import re
+import redis
 from datetime import datetime
 
 
 from flask import request, jsonify, g, current_app, json
 from werkzeug.utils import secure_filename
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from Notice import db
 from . import user
+from .. import db
 from ..modles import User, Notice, Photo
+from ..redis_ import r
 
 
 def user_login_token(view_func):
@@ -33,6 +35,14 @@ def user_login_token(view_func):
     return wrapper
 
 
+r.set("login", 0)
+r.set("notice", 0)
+r.set("upload", 0)
+r.set("get_notice", 0)
+r.set("get_notice_all", 0)
+r.set("delete_notice", 0)
+
+
 @user.route("/")
 def hello_world():
     return "hello"
@@ -42,6 +52,9 @@ def hello_world():
 @user.route("/login", methods=["POST"])
 def login():
     """用户的登录"""
+    user_id = g.user_id
+    r.sadd("login", user_id)
+    r.incr("login")
     # 获取参数
     req_dict = request.get_json()
     username = req_dict.get("username")
@@ -72,6 +85,8 @@ def login():
 @user_login_token
 def notice():
     user_id = g.user_id
+    r.sadd("notice", user_id)
+    r.incr("notice")
     # 获取参数
     req_dict = request.get_json()
     text = req_dict.get("text")
@@ -98,6 +113,9 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 @user.route("/upload", methods=["POST"])
 @user_login_token
 def upload():
+    user_id = g.user_id
+    r.sadd("upload", user_id)
+    r.incr("upload")
     notice_id = request.form.get("key", type=str)
     print(notice_id)
     f = request.files.get('file')
@@ -132,6 +150,8 @@ def upload():
 @user_login_token
 def get_notice():
     user_id = g.user_id
+    r.sadd("get_notice", user_id)
+    r.incr("get_notice")
     req_dict = request.get_json()
     keyword = req_dict.get("keyword")
     if not all([user_id, keyword]):
@@ -154,6 +174,9 @@ def get_notice():
 @user.route("/get_notice_all", methods=['GET'])
 @user_login_token
 def get_notice_all():
+    user_id = g.user_id
+    r.sadd("get_notice_all", user_id)
+    r.incr("get_notice_all")
     notice_id = []
     notice_text = []
     notices = Notice.query.filter_by(status="寻物启事").all()
@@ -169,6 +192,8 @@ def get_notice_all():
 @user_login_token
 def delete_notice():
     user_id = g.user_id
+    r.sadd("delete_notice", user_id)
+    r.incr("delete_notice")
     req_dict = request.get_json()
     notice_id = req_dict.get("notice_id")
     this_notice = Notice.query.get(notice_id)
@@ -179,9 +204,9 @@ def delete_notice():
         return jsonify(code=4005, msg="没有权限")
     try:
         # 删除对应的图片
-        r = Photo.query.filter_by(notice_id=notice_id).delete()
+        t = Photo.query.filter_by(notice_id=notice_id).delete()
         # 删除寻物启事
-        t = Notice.query.filter_by(id=notice_id).delete()
+        m = Notice.query.filter_by(id=notice_id).delete()
         db.session.commit()
         return jsonify(code=200, msg="删除成功")
     except Exception as e:
