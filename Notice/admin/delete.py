@@ -7,7 +7,7 @@ from itsdangerous import Serializer
 from . import admin
 from .. import db
 from ..modles import Notice, Photo
-from ..redis_ import r
+from ..redis_config import r
 
 
 def admin_login_token(view_func):

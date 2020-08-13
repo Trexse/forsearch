@@ -12,7 +12,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from . import user
 from .. import db
 from ..modles import User, Notice, Photo
-from ..redis_ import r, stop_push_again
+from ..redis_config import r, stop_push_again
 
 
 def user_login_token(view_func):
