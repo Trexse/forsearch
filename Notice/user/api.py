@@ -12,7 +12,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from . import user
 from .. import db
 from ..modles import User, Notice, Photo
-from ..redis_config import r, stop_push_again
+from ..redis_config import REDIS
 
 
 def user_login_token(view_func):
@@ -27,20 +27,19 @@ def user_login_token(view_func):
         s = Serializer(current_app.config["SECRET_KEY"])
         try:
             data = s.loads(token)
-            g.user_id = data['id']
+            g.user_id = str(data['id'])
+            try:
+                if g.user_id == REDIS.get(data['id']):
+                    return jsonify(code=400, msg="请求频繁，请稍后再试")
+                    db.session.rollback()
+                REDIS.set(data['id'], data['id'], 10)
+            except Exception as e3:
+                return jsonify(code=4000, msg="redis出错")
         except Exception as e2:
             return jsonify(code=4000, msg="登录已过期")
         return view_func(*args, **kwargs)
 
     return wrapper
-
-
-r.set("login", 0)
-r.set("notice", 0)
-r.set("upload", 0)
-r.set("get_notice", 0)
-r.set("get_notice_all", 0)
-r.set("delete_notice", 0)
 
 
 @user.route("/")
@@ -52,9 +51,6 @@ def hello_world():
 @user.route("/login", methods=["POST"])
 def login():
     """用户的登录"""
-    user_id = g.user_id
-    r.sadd("login", user_id)
-    r.incr("login")
     # 获取参数
     req_dict = request.get_json()
     username = req_dict.get("username")
@@ -83,11 +79,12 @@ def login():
 
 @user.route("/notice", methods=['POST'])
 @user_login_token
-@stop_push_again
+# @stop_push_again
 def notice():
     user_id = g.user_id
-    r.sadd("notice", user_id)
-    r.incr("notice")
+    REDIS.sadd("notice2", user_id)
+    REDIS.incr("notice")
+    print(REDIS.get("notice"))
     # 获取参数
     req_dict = request.get_json()
     text = req_dict.get("text")
@@ -113,11 +110,11 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 @user.route("/upload", methods=["POST"])
 @user_login_token
-@stop_push_again
+# @stop_push_again
 def upload():
     user_id = g.user_id
-    r.sadd("upload", user_id)
-    r.incr("upload")
+    REDIS.sadd("upload2", user_id)
+    REDIS.incr("upload")
     notice_id = request.form.get("key", type=str)
     print(notice_id)
     f = request.files.get('file')
@@ -150,11 +147,11 @@ def upload():
 
 @user.route("/get_notice", methods=['POST'])
 @user_login_token
-@stop_push_again
+# @stop_push_again
 def get_notice():
     user_id = g.user_id
-    r.sadd("get_notice", user_id)
-    r.incr("get_notice")
+    REDIS.sadd("get_notice2", user_id)
+    REDIS.incr("get_notice")
     req_dict = request.get_json()
     keyword = req_dict.get("keyword")
     if not all([user_id, keyword]):
@@ -176,29 +173,28 @@ def get_notice():
 
 @user.route("/get_notice_all", methods=['GET'])
 @user_login_token
-@stop_push_again
+# @stop_push_again
 def get_notice_all():
     user_id = g.user_id
-    r.sadd("get_notice_all", user_id)
-    r.incr("get_notice_all")
-    notice_id = []
-    notice_text = []
+    REDIS.sadd("get_notice_all2", user_id)
+    REDIS.incr("get_notice_all")
+    notice_show = []
     notices = Notice.query.filter_by(status="寻物启事").all()
     for notice in notices:
-        notice_id.append(notice.id)
-        notice_text.append(notice.text)
-    resp_dict = dict(code=200, notice_id=notice_id, notice_text=notice_text)
+        notice_show.append(notice.id)
+        notice_show.append(notice.text)
+    resp_dict = dict(code=200, notice=notice_show)
     resp_json = json.dumps(resp_dict)
     return resp_json, 200, {"Content-Type": "application/json"}
 
 
 @user.route("/delete_notice", methods=['POST'])
 @user_login_token
-@stop_push_again
+# @stop_push_again
 def delete_notice():
     user_id = g.user_id
-    r.sadd("delete_notice", user_id)
-    r.incr("delete_notice")
+    REDIS.sadd("delete_notice2", user_id)
+    REDIS.incr("delete_notice")
     req_dict = request.get_json()
     notice_id = req_dict.get("notice_id")
     this_notice = Notice.query.get(notice_id)

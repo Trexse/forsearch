@@ -12,9 +12,9 @@ SECRET_KEY = 'whatever-guess'
 WTF_CSRF_ENABLED = False
 
 # Redis配置信息
-REDIS_HOST = os.environ.get("REDIS_HOST")
-REDIS_PORT = 6379
-REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
+# REDIS_HOST = os.environ.get("REDIS_HOST")
+# REDIS_PORT = 6379
+# REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
 
 # flask-session配置
-PERMANENT_SESSION_LIFETIME = 3600  # 86400 session数据的有效期，单位秒
+# PERMANENT_SESSION_LIFETIME = 3600  # 86400 session数据的有效期，单位秒

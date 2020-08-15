@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="caiji_dev@pukgai.com" uuid="343f519a-2184-4168-8562-bb05019e4bb4">
+    <data-source source="LOCAL" name="47.107.37.25" uuid="abc101a1-5964-4240-80ce-99768602977b">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://pukgai.com:3306/caiji_dev</jdbc-url>
+      <jdbc-url>jdbc:mysql://47.107.37.25:3306</jdbc-url>
     </data-source>
   </component>
 </project>

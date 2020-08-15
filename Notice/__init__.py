@@ -7,7 +7,7 @@ import redis
 db = SQLAlchemy()
 
 # 创建redis连接对象
-redis_store = None
+# redis_store = None
 
 
 # 工厂模式
@@ -21,9 +21,9 @@ def create_app(config_name):
     db.init_app(app)
 
     # 初始化redis工具
-    global redis_store
-    redis_store = redis.StrictRedis(host=config_class.REDIS_HOST, port=config_class.REDIS_PORT,
-                                    password=config_class.REDIS_PASSWORD, db=2, decode_responses=True)
+    # global redis_store
+    # redis_store = redis.StrictRedis(host=config_class.REDIS_HOST, port=config_class.REDIS_PORT,
+    #                                 password=config_class.REDIS_PASSWORD, db=2, decode_responses=True)
     # 注册蓝图
     from Notice import admin, user
     app.register_blueprint(user.user, url_prefix="/user")
