@@ -28,11 +28,13 @@ def user_login_token(view_func):
         try:
             data = s.loads(token)
             g.user_id = str(data['id'])
+            api = request.path
+            modle = api+str(data['id'])
             try:
-                if g.user_id == REDIS.get(data['id']):
+                if g.user_id == REDIS.get(modle):
                     return jsonify(code=400, msg="请求频繁，请稍后再试")
                     db.session.rollback()
-                REDIS.set(data['id'], data['id'], 10)
+                REDIS.set(modle, data['id'], 10)
             except Exception as e3:
                 return jsonify(code=4000, msg="redis出错")
         except Exception as e2:
@@ -42,7 +44,7 @@ def user_login_token(view_func):
     return wrapper
 
 
-@user.route("/")
+@user.route("/hello")
 def hello_world():
     return "hello"
 
@@ -79,7 +81,6 @@ def login():
 
 @user.route("/notice", methods=['POST'])
 @user_login_token
-# @stop_push_again
 def notice():
     user_id = g.user_id
     REDIS.sadd("notice2", user_id)
@@ -110,7 +111,6 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 @user.route("/upload", methods=["POST"])
 @user_login_token
-# @stop_push_again
 def upload():
     user_id = g.user_id
     REDIS.sadd("upload2", user_id)
@@ -147,7 +147,6 @@ def upload():
 
 @user.route("/get_notice", methods=['POST'])
 @user_login_token
-# @stop_push_again
 def get_notice():
     user_id = g.user_id
     REDIS.sadd("get_notice2", user_id)
@@ -173,7 +172,6 @@ def get_notice():
 
 @user.route("/get_notice_all", methods=['GET'])
 @user_login_token
-# @stop_push_again
 def get_notice_all():
     user_id = g.user_id
     REDIS.sadd("get_notice_all2", user_id)
@@ -190,7 +188,6 @@ def get_notice_all():
 
 @user.route("/delete_notice", methods=['POST'])
 @user_login_token
-# @stop_push_again
 def delete_notice():
     user_id = g.user_id
     REDIS.sadd("delete_notice2", user_id)
