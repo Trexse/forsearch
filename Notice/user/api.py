@@ -60,13 +60,13 @@ def login():
 
     # 参数完整的校验
     if not all([username, password]):
-        return jsonify(code=4001, msg="参数不完整.")
+        return jsonify(code=4001, msg="参数不完整")
 
     try:
         user = User.query.filter_by(username=username).first()
     except Exception as e:
         print(e)
-        return jsonify(code=4000, msg="获取用户信息失败")
+        return jsonify(code=4000, msg="获取用户信息失败,请检查参数或检查网络连接")
 
     # 用数据库的密码与用户填写的密码进行对比验证
     if user is None or user.password != password:
@@ -85,7 +85,6 @@ def notice():
     user_id = g.user_id
     REDIS.sadd("notice2", user_id)
     REDIS.incr("notice")
-    print(REDIS.get("notice"))
     # 获取参数
     req_dict = request.get_json()
     text = req_dict.get("text")
